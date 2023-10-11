@@ -48,29 +48,20 @@ having (min(abv) < min_abv or max(abv) > max_abv) and min_abv != max_abv;
 
 create or replace view q4 as
 select breweries.name as brewery,
-       avg(beers.rating)::numeric(3, 1) as rating,
+       avg(beers.rating)::numeric(3, 1) as rating
 from beers
 inner join brewed_by on beers.id = brewed_by.beer
 inner join breweries on brewed_by.brewery = breweries.id
 where beers.rating is not null
 group by breweries.name
-having count(beers.id) >= 5;
-
-create or replace view qq4 as
-select breweries.name as brewery
-from (
-	select brewed_by.beer as beer, avg(
-	from brewed_by
-    )
-    inner join beers
-    where beers.rating is not null
-)
-
+having count(beers.id) >= 5
+order by rating DESC
+LIMIT 1;
 
 ---- Q5
 
 create or replace function q5(pattern text)
-returns table(beer text, container text, std_drinks numeric(3, 1)) as $$
+returns table(beer text, container text, std_drinks numeric) as $$
     select beers.name,
            beers.volume || 'ml ' || beers.sold_in as container,
            (beers.volume * beers.abv * 0.0008)::numeric(3, 1) as std_drinks
@@ -79,14 +70,27 @@ returns table(beer text, container text, std_drinks numeric(3, 1)) as $$
 $$ language sql;
 
 ---- Q6
---
---create or replace function
---    Q6(...) returns ...
---as $$
---...
---$$
---language sql ;
---
+
+-- create or replace function q6(pattern text)
+-- returns table(country text, first int, nbeers int, rating numeric) as $$
+--     with beers_by_country as (
+--         select locations.country as country,
+--                beers.brewed as first,
+--                count(*) as nbeers,
+--                avg(beers.rating) as rating
+--         from beers
+--         inner join brewed_by on brewed_by.beer = beers.id
+--         inner join breweries on brewed_by.brewery = breweries.id
+--         inner join locations on locations.id = breweries.located_in
+--         group by locations.country, beers.brewed
+--     )
+--     select beers_by_country.country as country,
+--            sum(beers_by_country.nbeers) as nbeers,
+--            avg(beers_by_country.rating)::numeric(3, 1) as rating
+--     from beers_by_country
+--     group by beers_by_country.country;
+-- $$ language sql;
+
 ---- Q7
 --
 --create or replace function
