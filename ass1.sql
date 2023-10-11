@@ -56,26 +56,28 @@ where beers.rating is not null
 group by breweries.name
 having count(beers.id) >= 5;
 
--- create or replace view qq4 as
--- select breweries.name as brewery
--- from (
--- 	select brewed_by.beer as beer, avg(
--- 	from brewed_by
---     )
---     inner join beers
---     where beers.rating is not null
--- )
+create or replace view qq4 as
+select breweries.name as brewery
+from (
+	select brewed_by.beer as beer, avg(
+	from brewed_by
+    )
+    inner join beers
+    where beers.rating is not null
+)
 
 
 ---- Q5
---
---create or replace function
---    Q5(...) returns ...
---as $$
---...
---$$
---language sql ;
---
+
+create or replace function q5(pattern text)
+returns table(beer text, container text, std_drinks numeric(3, 1)) as $$
+    select beers.name,
+           beers.volume || 'ml ' || beers.sold_in as container,
+           (beers.volume * beers.abv * 0.0008)::numeric(3, 1) as std_drinks
+    from beers
+    where beers.name ilike '%' || pattern || '%';
+$$ language sql;
+
 ---- Q6
 --
 --create or replace function
