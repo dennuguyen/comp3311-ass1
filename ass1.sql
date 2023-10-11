@@ -14,47 +14,58 @@
 
 ---- Q1
 
-CREATE OR REPLACE VIEW q1 AS
-SELECT region as state,
-       COUNT(*) AS nbreweries
-FROM breweries
-INNER JOIN locations ON locations.id = breweries.located_in
-WHERE locations.country = 'Australia'
-GROUP BY region; 
+create or replace view q1 as
+select region as state,
+       count(*) as nbreweries
+from breweries
+inner join locations on locations.id = breweries.located_in
+where locations.country = 'Australia'
+group by region; 
 
 ---- Q2
 
-CREATE OR REPLACE VIEW q2 AS
-SELECT name as style,
+create or replace view q2 as
+select name as style,
        min_abv,
        max_abv
-FROM styles
-WHERE max_abv - min_abv = (SELECT MAX(max_abv - min_abv) FROM styles);
+from styles
+where max_abv - min_abv = (select max(max_abv - min_abv) from styles);
 
 ---- Q3
 
-CREATE OR REPLACE VIEW q3 AS
-SELECT styles.name as style,
-       MIN(abv) AS lo_abv,
-       MAX(abv) AS hi_abv,
+create or replace view q3 as
+select styles.name as style,
+       min(abv) as lo_abv,
+       max(abv) as hi_abv,
        min_abv,
        max_abv
-FROM beers
-INNER JOIN styles ON beers.style = styles.id
-GROUP BY styles.name, styles.min_abv, styles.max_abv
-HAVING (MIN(abv) < min_abv OR MAX(abv) > max_abv) AND min_abv != max_abv;
+from beers
+inner join styles on beers.style = styles.id
+group by styles.name, styles.min_abv, styles.max_abv
+having (min(abv) < min_abv or max(abv) > max_abv) and min_abv != max_abv;
 
 ---- Q4
 
-CREATE OR REPLACE VIEW q4 AS
-SELECT breweries.name AS brewery,
-       AVG(beers.rating)::NUMERIC(3, 1) AS rating
-FROM beers
-INNER JOIN brewed_by ON beers.id = brewed_by.beer
-INNER JOIN breweries ON brewed_by.brewery = breweries.id
-WHERE beers.rating IS NOT NULL
-GROUP BY breweries.name
-HAVING COUNT(beers.id) >= 5;
+create or replace view q4 as
+select breweries.name as brewery,
+       avg(beers.rating)::numeric(3, 1) as rating,
+from beers
+inner join brewed_by on beers.id = brewed_by.beer
+inner join breweries on brewed_by.brewery = breweries.id
+where beers.rating is not null
+group by breweries.name
+having count(beers.id) >= 5;
+
+-- create or replace view qq4 as
+-- select breweries.name as brewery
+-- from (
+-- 	select brewed_by.beer as beer, avg(
+-- 	from brewed_by
+--     )
+--     inner join beers
+--     where beers.rating is not null
+-- )
+
 
 ---- Q5
 --
