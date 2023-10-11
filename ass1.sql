@@ -55,8 +55,8 @@ inner join breweries on brewed_by.brewery = breweries.id
 where beers.rating is not null
 group by breweries.name
 having count(beers.id) >= 5
-order by rating DESC
-LIMIT 1;
+order by rating desc
+limit 1;
 
 ---- Q5
 
