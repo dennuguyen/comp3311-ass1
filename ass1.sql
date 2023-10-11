@@ -18,20 +18,34 @@ CREATE OR REPLACE VIEW q1 AS
 SELECT region as state,
        COUNT(*) AS nbreweries
 FROM breweries
-INNER JOIN locations
-ON locations.id = breweries.located_in
+INNER JOIN locations ON locations.id = breweries.located_in
 WHERE locations.country = 'Australia'
 GROUP BY region; 
 
 ---- Q2
 
-CREATE OR REPLACE VIEW q2 AS SELECT name as style, min_abv, max_abv FROM styles WHERE max_abv - min_abv = (SELECT MAX(max_abv - min_abv) FROM styles);
+CREATE OR REPLACE VIEW q2 AS
+SELECT name as style,
+       min_abv,
+       max_abv
+FROM styles
+WHERE max_abv - min_abv = (SELECT MAX(max_abv - min_abv) FROM styles);
 
 ---- Q3
 
---CREATE VIEW q3 AS SELECT DISTINCT ON (styles.name) styles.name as style, MIN(abv) OVER (PARTITION BY styles.name) AS lo_abv, MAX(abv) OVER (PARTITION BY styles.name) AS hi_abv, min_abv, max_abv FROM beers INNER JOIN styles ON beers.style=styles.id;
+CREATE OR REPLACE VIEW q3 AS
+SELECT styles.name as style,
+       MIN(abv) AS lo_abv,
+       MAX(abv) AS hi_abv,
+       min_abv,
+       max_abv
+FROM beers
+INNER JOIN styles ON beers.style = styles.id
+GROUP BY styles.name, styles.min_abv, styles.max_abv
+HAVING (MIN(abv) < min_abv OR MAX(abv) > max_abv)
+AND min_abv != max_abv;
 
-CREATE OR REPLACE VIEW q3 AS SELECT styles.name as style, MIN(abv) AS lo_abv, MAX(abv) AS hi_abv, min_abv, max_abv FROM beers INNER JOIN styles ON beers.style=styles.id GROUP BY styles.name, styles.min_abv, styles.max_abv ORDER BY styles.name;
+--CREATE OR REPLACE VIEW q3 AS SELECT styles.name as style, MIN(abv) AS lo_abv, MAX(abv) AS hi_abv, min_abv, max_abv FROM beers INNER JOIN styles ON beers.style=styles.id GROUP BY styles.name, styles.min_abv, styles.max_abv ORDER BY styles.name;
 
 ---- Q4
 
