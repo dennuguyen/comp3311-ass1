@@ -42,14 +42,19 @@ SELECT styles.name as style,
 FROM beers
 INNER JOIN styles ON beers.style = styles.id
 GROUP BY styles.name, styles.min_abv, styles.max_abv
-HAVING (MIN(abv) < min_abv OR MAX(abv) > max_abv)
-AND min_abv != max_abv;
-
---CREATE OR REPLACE VIEW q3 AS SELECT styles.name as style, MIN(abv) AS lo_abv, MAX(abv) AS hi_abv, min_abv, max_abv FROM beers INNER JOIN styles ON beers.style=styles.id GROUP BY styles.name, styles.min_abv, styles.max_abv ORDER BY styles.name;
+HAVING (MIN(abv) < min_abv OR MAX(abv) > max_abv) AND min_abv != max_abv;
 
 ---- Q4
 
-CREATE OR REPLACE VIEW q4 AS SELECT breweries.name AS brewery, CAST(AVG(beers.rating) AS NUMERIC(3, 1)) AS rating FROM beers INNER JOIN brewed_by ON beers.id = brewed_by.beer INNER JOIN breweries ON brewed_by.brewery = breweries.id WHERE beers.rating IS NOT NULL GROUP BY breweries.name HAVING COUNT(beers.id) >= 5;
+CREATE OR REPLACE VIEW q4 AS
+SELECT breweries.name AS brewery,
+       AVG(beers.rating)::NUMERIC(3, 1) AS rating
+FROM beers
+INNER JOIN brewed_by ON beers.id = brewed_by.beer
+INNER JOIN breweries ON brewed_by.brewery = breweries.id
+WHERE beers.rating IS NOT NULL
+GROUP BY breweries.name
+HAVING COUNT(beers.id) >= 5;
 
 ---- Q5
 --
