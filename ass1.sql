@@ -90,10 +90,41 @@ $$ language sql;
 ---- Q7
 
 create or replace function q7(_beerID int)
-returns as $$
-"No such beer "
+returns text as $$
+declare
+    beerName text;
+    ingredient record;
+    retval text;
+begin
+    select beers.name into beerName from beers where beers.id = _beerId;
+
+    if beerName is null then
+        return 'No such beer (' || _beerId || ')';
+    end if;
+
+    retval := '"' || beerName || '"';
+
+    if not exists(select from contains where contains.beer = _beerId) then
+        return retval || e'\n' || '  has no ingredients recorded';
+    end if;
+
+    retval := retval || e'\n' || '  contains:';
+
+    for ingredient in (
+        select ingredients.name, ingredients.itype
+        from contains
+        inner join ingredients on ingredients.id = contains.ingredient
+        where contains.beer = _beerId
+        order by ingredients.name
+    )
+    loop
+        retval := retval || e'\n' || '    ' || ingredient.name || ' (' || ingredient.itype || ')';
+    end loop;
+
+    return retval;
+end;
 $$
-language plpgsql ;
+language plpgsql;
 
 ---- Q8
 --
