@@ -41,7 +41,9 @@ select styles.name as style,
        max_abv
 from beers
 inner join styles on beers.style = styles.id
-group by styles.name, styles.min_abv, styles.max_abv
+group by styles.name,
+         styles.min_abv,
+         styles.max_abv
 having (min(abv) < min_abv or max(abv) > max_abv) and min_abv != max_abv;
 
 ---- Q4
@@ -86,14 +88,13 @@ returns table(country text, first int, nbeers int, rating numeric) as $$
 $$ language sql;
 
 ---- Q7
---
---create or replace function
---    Q7(...) returns ...
---as $$
---...
---$$
---language plpgsql ;
---
+
+create or replace function q7(_beerID int)
+returns as $$
+"No such beer "
+$$
+language plpgsql ;
+
 ---- Q8
 --
 --create or replace function
