@@ -71,25 +71,19 @@ $$ language sql;
 
 ---- Q6
 
--- create or replace function q6(pattern text)
--- returns table(country text, first int, nbeers int, rating numeric) as $$
---     with beers_by_country as (
---         select locations.country as country,
---                beers.brewed as first,
---                count(*) as nbeers,
---                avg(beers.rating) as rating
---         from beers
---         inner join brewed_by on brewed_by.beer = beers.id
---         inner join breweries on brewed_by.brewery = breweries.id
---         inner join locations on locations.id = breweries.located_in
---         group by locations.country, beers.brewed
---     )
---     select beers_by_country.country as country,
---            sum(beers_by_country.nbeers) as nbeers,
---            avg(beers_by_country.rating)::numeric(3, 1) as rating
---     from beers_by_country
---     group by beers_by_country.country;
--- $$ language sql;
+create or replace function q6(pattern text)
+returns table(country text, first int, nbeers int, rating numeric) as $$
+    select locations.country as country,
+           MIN(beers.brewed) as first,
+           count(*) as nbeers,
+           avg(beers.rating)::numeric(3, 1) as rating
+    from beers
+    inner join brewed_by on brewed_by.beer = beers.id
+    inner join breweries on brewed_by.brewery = breweries.id
+    inner join locations on locations.id = breweries.located_in
+    where locations.country ilike '%' || pattern || '%'
+    group by locations.country;
+$$ language sql;
 
 ---- Q7
 --
