@@ -96,16 +96,16 @@ declare
     ingredient record;
     retval text;
 begin
-    select beers.name into beerName from beers where beers.id = _beerId;
+    select beers.name into beerName from beers where beers.id = _beerID;
 
     if beerName is null then
-        return 'No such beer (' || _beerId || ')';
+        return 'No such beer (' || _beerID || ')';
     end if;
 
     -- Add beer name to returning string.
     retval := '"' || beerName || '"';
 
-    if not exists(select from contains where contains.beer = _beerId) then
+    if not exists(select from contains where contains.beer = _beerID) then
         return retval || e'\n' || '  no ingredients recorded';
     end if;
 
@@ -115,7 +115,7 @@ begin
         select ingredients.name, ingredients.itype
         from contains
         inner join ingredients on ingredients.id = contains.ingredient
-        where contains.beer = _beerId
+        where contains.beer = _beerID
         order by ingredients.name
     )
     loop
@@ -129,7 +129,7 @@ language plpgsql;
 
 ---- Q8
 
-create or replace function q8(...) returns ...
+create or replace function q8(pattern text) returns ...
 as $$
 ...
 $$
