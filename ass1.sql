@@ -105,7 +105,7 @@ begin
     retval := '"' || beerName || '"';
 
     if not exists(select from contains where contains.beer = _beerId) then
-        return retval || e'\n' || '  has no ingredients recorded';
+        return retval || e'\n' || '  no ingredients recorded';
     end if;
 
     retval := retval || e'\n' || '  contains:';
