@@ -102,14 +102,15 @@ begin
         return 'No such beer (' || _beerId || ')';
     end if;
 
+    -- Add beer name to returning string.
     retval := '"' || beerName || '"';
 
     if not exists(select from contains where contains.beer = _beerId) then
         return retval || e'\n' || '  no ingredients recorded';
     end if;
 
+    -- Add ingredient names and itype to returning string.
     retval := retval || e'\n' || '  contains:';
-
     for ingredient in (
         select ingredients.name, ingredients.itype
         from contains
@@ -127,14 +128,13 @@ $$
 language plpgsql;
 
 ---- Q8
---
---create or replace function
---    Q8(...) returns ...
---as $$
---...
---$$
---language plpgsql ;
---
+
+create or replace function q8(...) returns ...
+as $$
+...
+$$
+language plpgsql ;
+
 ---- Q9
 --
 --create or replace function
