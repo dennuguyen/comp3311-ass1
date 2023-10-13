@@ -166,8 +166,50 @@ $$ language plpgsql;
 
 ---- Q9
 
--- create or replace function q9(brewery int)
--- returns ... as $$
--- ...
--- $$ language plpgsql;
+drop type if exists Collab cascade;
+create type Collab as (brewery text, collaborator text);
+
+create or replace function q9(breweryID int)
+returns setof Collab as $$
+declare
+    breweryName text;
+    collabs record;
+    isFirstLoop boolean := true;
+begin
+    select breweries.name into breweryName from breweries where breweries.id = breweryID;
+
+    if breweryName is null then
+        return next ('No such brewery (' || breweryID || ')', 'none')::Collab;
+        return;
+    end if;
+
+    for collabs in (
+        select distinct(breweries.id) as id,
+               breweries.name as name
+        from brewed_by
+        inner join breweries on brewed_by.brewery = breweries.id
+        -- All beers that specified brewery has worked on.
+        where brewed_by.beer in (
+            select brewed_by.beer from brewed_by where breweryID = brewed_by.brewery
+        )
+        -- To not duplicate specified brewery.
+        and breweryID != brewed_by.brewery
+        order by breweries.name
+    )
+    loop
+        if isFirstLoop then
+            return next (breweryName, collabs.name)::Collab;
+            isFirstLoop := false;
+            continue;
+        end if;
+
+        return next (null, collabs.name)::Collab;
+    end loop;
+
+    -- Collabs is empty.
+    if isFirstLoop then
+        return next (breweryName, 'none')::Collab;
+    end if;
+end;
+$$ language plpgsql;
 
