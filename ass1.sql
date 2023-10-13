@@ -76,7 +76,7 @@ $$ language sql;
 create or replace function q6(pattern text)
 returns table(country text, first int, nbeers int, rating numeric) as $$
     select locations.country as country,
-           MIN(beers.brewed) as first,
+           min(beers.brewed) as first,
            count(*) as nbeers,
            avg(beers.rating)::numeric(3, 1) as rating
     from beers
@@ -165,11 +165,9 @@ end;
 $$ language plpgsql;
 
 ---- Q9
---
---create or replace function
---    Q9(...) returns ...
---as $$
---...
---$$
---language plpgsql ;
---
+
+-- create or replace function q9(brewery int)
+-- returns ... as $$
+-- ...
+-- $$ language plpgsql;
+
