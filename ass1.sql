@@ -124,16 +124,35 @@ begin
 
     return retval;
 end;
-$$
-language plpgsql;
+$$ language plpgsql;
 
 ---- Q8
 
-create or replace function q8(pattern text) returns ...
-as $$
-...
-$$
-language plpgsql ;
+drop type if exists BeerHops cascade;
+create type BeerHops as (beer text, brewery text, hops text);
+
+create or replace function q8(pattern text)
+returns setof BeerHops as $$
+declare
+    beer_hops BeerHops;
+begin
+    for beer_hops in (
+        select beers.name as beer,
+               string_agg(distinct breweries.name, '+' order by breweries.name) as brewery,
+               case when ingredients.itype = 'hop' then string_agg(distinct ingredients.name, ',' order by ingredients.name) else 'no hops recorded' end as hops
+        from beers
+        full join contains on beers.id = contains.beer
+        full join ingredients on ingredients.id = contains.ingredient
+        inner join brewed_by on brewed_by.beer = beers.id
+        inner join breweries on brewed_by.brewery = breweries.id
+        where beers.name ilike '%' || pattern || '%'
+        group by beers.id
+    )
+    loop
+        return next beer_hops;
+    end loop;
+end;
+$$ language plpgsql;
 
 ---- Q9
 --
