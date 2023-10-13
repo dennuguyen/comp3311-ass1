@@ -134,22 +134,32 @@ create type BeerHops as (beer text, brewery text, hops text);
 create or replace function q8(pattern text)
 returns setof BeerHops as $$
 declare
+    beer record;
     beer_hops BeerHops;
+    prev_id int;
 begin
-    for beer_hops in (
+    for beer in (
         select beers.name as beer,
                string_agg(distinct breweries.name, '+' order by breweries.name) as brewery,
-               case when ingredients.itype = 'hop' then string_agg(distinct ingredients.name, ',' order by ingredients.name) else 'no hops recorded' end as hops
+               case when ingredients.itype = 'hop' then string_agg(distinct ingredients.name, ',' order by ingredients.name) else 'no hops recorded' end as hops,
+               beers.id as id
         from beers
         full join contains on beers.id = contains.beer
         full join ingredients on ingredients.id = contains.ingredient
         inner join brewed_by on brewed_by.beer = beers.id
         inner join breweries on brewed_by.brewery = breweries.id
         where beers.name ilike '%' || pattern || '%'
-        group by beers.id
+        group by beers.id, ingredients.itype
+        order by beers.id
     )
     loop
-        return next beer_hops;
+        -- Filter out duplicate beers when beer has hop and non-hop ingredients.
+        if beer.id = prev_id then
+            continue;
+        end if;
+        prev_id = beer.id;
+
+        return next (beer.beer, beer.brewery, beer.hops)::BeerHops;
     end loop;
 end;
 $$ language plpgsql;
